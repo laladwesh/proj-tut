@@ -12,14 +12,20 @@ import (
 
 	"github.com/laladwesh/proj-tut/internal/config"
 	"github.com/laladwesh/proj-tut/internal/http/handlers/student"
+	"github.com/laladwesh/proj-tut/internal/storage/sqlite"
 )
 
 func main() {
 	//load config
 	cfg := config.MustLoad()
 
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	slog.Info("Storage initialized", slog.String("path", cfg.StoragePath), slog.String("env", cfg.Env))
 	router := http.NewServeMux()
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
 
 	server := http.Server{
 		Addr:    cfg.Addr,
