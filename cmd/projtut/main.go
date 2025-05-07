@@ -26,6 +26,7 @@ func main() {
 	slog.Info("Storage initialized", slog.String("path", cfg.StoragePath), slog.String("env", cfg.Env))
 	router := http.NewServeMux()
 	router.HandleFunc("POST /api/students", student.New(storage))
+	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 
 	server := http.Server{
 		Addr:    cfg.Addr,
