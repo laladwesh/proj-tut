@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/laladwesh/proj-tut/internal/storage"
@@ -54,5 +55,35 @@ func New(storage storage.Storage) http.HandlerFunc {
 		response.WriteJSON(w, http.StatusCreated, map[string]int64{"id": lastid})
 		slog.Info("Creating a student", slog.String("method", r.Method), slog.String("path", r.URL.Path))
 		response.WriteJSON(w, http.StatusCreated, map[string]string{"message": "student created"})
+	}
+}
+
+func GetById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract the student ID from the URL path
+		id := r.PathValue("id")
+		if id == "" {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(errors.New("missing student ID")))
+			return
+		}
+
+		// Fetch the student from the storage
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+		student, err := storage.GetStudentByID(intId)
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		// if student == nil {
+		// 	response.WriteJSON(w, http.StatusNotFound, response.GeneralError(errors.New("student not found")))
+		// 	return
+		// }
+
+		response.WriteJSON(w, http.StatusOK, student)
 	}
 }
