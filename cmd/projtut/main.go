@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/laladwesh/proj-tut/internal/config"
+	"github.com/laladwesh/proj-tut/internal/http/handlers/student"
 )
 
 func main() {
@@ -18,16 +19,13 @@ func main() {
 	cfg := config.MustLoad()
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World! chpdibqeifb"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	server := http.Server{
 		Addr:    cfg.Addr,
 		Handler: router,
 	}
 	slog.Info("Starting server...", slog.String("address", cfg.HTTPServer.Addr))
-	// fmt.Printf("Server started on %s", cfg.HTTPServer.Addr)
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
